@@ -37,27 +37,38 @@ async function run() {
 
     app.get("/touristsSpot/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
+      const query = {_id : new ObjectId(id)};
       const result = await touristsSpotCollection.findOne(query);
       res.send(result);
     });
 
-    app.get("/singleTouristsSpot/:id", async (req, res) => {
-      const id = req.params.id;
-      console.log(id);
-      const query = { _id: new ObjectId(id) };
-      const result = myTouristsSpotCollection.findOne(query);
+    app.get("/alltouristsSpot", async (req, res) => {
+      const cursor = myTouristsSpotCollection.find();
+      const result = await cursor.toArray();
       res.send(result);
     });
 
-    app.get("/alltouristsSpot/:email", async (req, res) => {
-      const email = req.params.email;
-      console.log("email: ",email);
-      const query = { email: email };
+    app.get("/alltouristsSpot/:identifier", async (req, res) => {
+      const identifier = req.params.identifier;
+      let query;
+      if (identifier.includes('@')) {
+        query = { email: identifier };
+      } else {
+        query = { _id: new ObjectId(identifier) };
+      }
       const cursor = myTouristsSpotCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // app.get("/alltouristsSpot/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   console.log("email: ",email);
+    //   const query = { email: email };
+    //   const cursor = myTouristsSpotCollection.find(query);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
 
     app.post("/alltouristsSpot", async (req, res) => {
       const newtouristsSpot = req.body;
@@ -66,10 +77,11 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/alltouristsSpot/:email", async (req, res) => {
+    app.put("/alltouristsSpot/:id", async (req, res) => {
       const updateSpot = req.body;
-      const email = req.params.email;
-      const filter = { email: email };
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const objects = { upsert : true};
       const spot = {
         $set: {
           touristsSpotName: updateSpot.touristsSpotName,
@@ -85,8 +97,10 @@ async function run() {
       };
       const result = await myTouristsSpotCollection.updateOne(
         filter,
-        spot
+        spot,
+        objects
       );
+      res.send(result);
     });
 
     app.delete("/alltouristsSpot/:email", async (req, res) => {
