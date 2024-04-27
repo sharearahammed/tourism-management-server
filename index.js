@@ -41,7 +41,7 @@ async function run() {
       const result = await touristsSpotCollection.findOne(query);
       res.send(result);
     });
-
+ 
     app.get("/alltouristsSpot", async (req, res) => {
       const cursor = myTouristsSpotCollection.find();
       const result = await cursor.toArray();
