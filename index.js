@@ -40,7 +40,7 @@ async function run() {
       const query = {_id : new ObjectId(id)};
       const result = await touristsSpotCollection.findOne(query);
       res.send(result);
-    }); 
+    });
 
     app.get("/alltouristsSpot", async (req, res) => {
       const cursor = myTouristsSpotCollection.find();
