@@ -28,6 +28,21 @@ async function run() {
     const database = client.db("touristsSpotDB");
     const touristsSpotCollection = database.collection("touristsSpot");
     const myTouristsSpotCollection = database.collection("myTouristsSpot");
+    const countryNameCollection = database.collection("country");
+
+    app.get("/country", async (req, res) => {
+      const cursor = countryNameCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.post("/country", async (req, res) => {
+      const newCountry = req.body;
+      console.log(newCountry);
+      const result = await countryNameCollection.insertOne(newCountry);
+      res.send(result);
+    });
+
+
 
     app.get("/touristsSpot", async (req, res) => {
       const cursor = touristsSpotCollection.find();
@@ -42,6 +57,14 @@ async function run() {
       res.send(result);
     });
 
+    // app.get("/alltouristsSpot/:country", async (req, res) => {
+    //   const country = req.params.country;
+    //   const query = {countryName : country};
+    //   const cursor = myTouristsSpotCollection.find(query);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
     app.get("/alltouristsSpot", async (req, res) => {
       const cursor = myTouristsSpotCollection.find();
       const result = await cursor.toArray();
@@ -53,22 +76,22 @@ async function run() {
       let query;
       if (identifier.includes('@')) {
         query = { email: identifier };
-      } else {
+        projection = { email: 1 };
+      } else if (isValidObjectId(identifier)) {
         query = { _id: new ObjectId(identifier) };
+        projection = { _id: 1 };
+      } else {
+        query = { countryName: identifier };
+        projection = { countryName: 1 };
       }
       const cursor = myTouristsSpotCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
+    function isValidObjectId(id) {
+      return /^[0-9a-fA-F]{24}$/.test(id);
+    }
 
-    // app.get("/alltouristsSpot/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   console.log("email: ",email);
-    //   const query = { email: email };
-    //   const cursor = myTouristsSpotCollection.find(query);
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // });
 
     app.post("/alltouristsSpot", async (req, res) => {
       const newtouristsSpot = req.body;
@@ -103,10 +126,10 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/alltouristsSpot/:email", async (req, res) => {
-      const email = req.params.email;
-      console.log(email);
-      const query = { email: email };
+    app.delete("/alltouristsSpot/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
       const result = await myTouristsSpotCollection.deleteOne(query);
       res.send(result);
     });
@@ -124,7 +147,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Roamazing Management Server");
 });
 
 app.listen(port, () => {
